@@ -1,23 +1,32 @@
-# Step 2: Install Podman
-- name: Install Podman
-  run: |
-    sudo apt-get update
-    sudo apt-get install -y podman
+name: Build & Deploy GameOps Static Web
 
-# Debug secret
-- name: Debug Docker username
-  run: |
-    echo "Docker username = '${{ secrets.DOCKER_USERNAME }}'"
+on:
+  push:
+    branches: [ main ]
 
-# Step 3: Build Podman image
-- name: Build Podman image
-  run: |
-    podman build -t docker.io/${{ secrets.DOCKER_USERNAME }}/gameops:latest .
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
-# Step 4: Login to Docker Hub
-- name: Login to Docker Hub
-  run: echo ${{ secrets.DOCKER_PASSWORD }} | podman login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin docker.io
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-# Step 5: Push image
-- name: Push Podman image
-  run: podman push docker.io/${{ secrets.DOCKER_USERNAME }}/gameops:latest
+      - name: Install Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman
+
+      - name: Debug Docker username
+        run: |
+          echo "Docker username = '${{ secrets.DOCKER_USERNAME }}'"
+
+      - name: Build Podman image
+        run: |
+          podman build -t docker.io/${{ secrets.DOCKER_USERNAME }}/gameops:latest .
+
+      - name: Login to Docker Hub
+        run: echo ${{ secrets.DOCKER_PASSWORD }} | podman login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin docker.io
+
+      - name: Push Podman image
+        run: podman push docker.io/${{ secrets.DOCKER_USERNAME }}/gameops:latest
