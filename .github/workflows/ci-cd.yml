@@ -5,34 +5,36 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-deploy:
+  # Job 1: Build and push image on GitHub-hosted runner
+  build-and-push:
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Checkout the repo
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Install Podman
       - name: Install Podman
         run: |
           sudo apt-get update
           sudo apt-get install -y podman
 
-      # Step 3: Build Podman image
       - name: Build Podman image
         run: |
           podman build -t docker.io/${{ secrets.DOCKERHUB_USERNAME }}/gameops:latest .
 
-      # Step 4: Login to Docker Hub
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | podman login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin docker.io
 
-      # Step 5: Push image to Docker Hub
       - name: Push Podman image
         run: podman push docker.io/${{ secrets.DOCKERHUB_USERNAME }}/gameops:latest
 
-      # Step 6: Deploy to Kubernetes
+  # Job 2: Deploy to local Minikube on self-hosted runner
+  deploy-to-minikube:
+    runs-on: self-hosted        # targets your self-hosted runner
+    needs: build-and-push        # ensures image is built first
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
