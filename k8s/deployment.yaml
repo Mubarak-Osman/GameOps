@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gameops
+  labels:
+    app: gameops
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gameops
+  template:
+    metadata:
+      labels:
+        app: gameops
+    spec:
+      containers:
+        - name: gameops
+          image: docker.io/3ubarak/gameops:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
