@@ -40,11 +40,15 @@ jobs:
         with:
           version: 'latest'
 
-      - name: Configure Kubeconfig
+      # Use the local kubeconfig on the runner; do NOT overwrite with a secret
+      - name: Use local kubeconfig
         run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
-          chmod 600 $HOME/.kube/config
+          echo "Using local kubeconfig at $HOME/.kube/config"
+
+      # Pull the latest image from Docker Hub into Minikube
+      - name: Pull Docker image into Minikube
+        run: |
+          minikube image pull docker.io/${{ secrets.DOCKERHUB_USERNAME }}/gameops:latest
 
       - name: Apply Kubernetes manifests
         run: |
