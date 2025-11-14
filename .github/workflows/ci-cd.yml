@@ -3,10 +3,9 @@ name: Build & Deploy GameOps Static Web
 on:
   push:
     branches: [ main ]
-      paths-ignore:
-        - 'README.md'
-        - 'docs/**'
-        - 'images/**'
+    paths-ignore:
+      - 'README.md'
+      - 'images/**'
 
 jobs:
   # Job 1: Build and push image on GitHub-hosted runner
