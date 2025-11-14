@@ -40,7 +40,7 @@ jobs:
       
       - name: Run pre-deployment setup
         run: |
-          bash ./predeploy-setup.sh
+          bash ./scripts/predeploy-setup.sh
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
