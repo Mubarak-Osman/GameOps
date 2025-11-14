@@ -135,21 +135,24 @@ Kanban hilft dabei, die Arbeit transparent und effizient zu organisieren und den
 
 ```
 📁 GameOps/
-│
-├── Containerfile           
-├── README.md               
-│
-├── index.html              
-├── tic-tac-toe.css             
-├── tic-tac-toe.js              
-│
-├── 📁 k8s/                 
-│   ├── deployment.yaml
-│   └── service.yaml
-│
-└── 📁 .github/
-    └── workflows/
-        └── ci-cd.yml   
+├── .github/
+│   └── workflows/
+│       └── ci‑cd.yml  
+├── images/ 
+├── k8s/
+│   ├── deployment.yaml  
+│   └── service.yaml  
+├── scripts/
+│   └── predeploy‑setup.sh  
+├── src/
+│   ├── assets/
+│   │   ├── css/
+│   │   │   └── tic‑tac‑toe.css  
+│   │   ├── js/
+│   │   │   └── tic‑tac‑toe.js  
+│   └── index.html  
+├── Containerfile  
+└── README.md  
 ```
 ---
 
