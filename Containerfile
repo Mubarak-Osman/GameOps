@@ -5,9 +5,9 @@ FROM nginx:alpine
 RUN rm -rf /usr/share/nginx/html/*
 
 # Copy your static files into Nginx
-COPY index.html /usr/share/nginx/html/
-COPY tic-tac-toe.css /usr/share/nginx/html/
-COPY tic-tac-toe.js /usr/share/nginx/html/
+COPY src/assets/index.html /usr/share/nginx/html/
+COPY src/assets/css/tic-tac-toe.css /usr/share/nginx/html/
+COPY src/assets/js/tic-tac-toe.js /usr/share/nginx/html/
 
 # Expose port 80
 EXPOSE 80
