@@ -37,6 +37,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      
+      - name: Run pre-deployment setup
+        run: |
+          bash ./scripts/predeploy-setup.sh
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
