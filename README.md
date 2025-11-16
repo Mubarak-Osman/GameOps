@@ -155,8 +155,141 @@ Kanban hilft dabei, die Arbeit transparent und effizient zu organisieren und den
 └── README.md  
 ```
 ---
+## 🧑‍💻 Implementierung
+---
+### Build the Game Frontend UI
+
+Der folgende Abschnitt beschreibt den Aufbau des Frontends für das Tic-Tac-Toe-Spiel.  
+Die Benutzeroberfläche besteht aus drei Kernbereichen:
+
+- **HTML** – Struktur & UI-Elemente  
+- **CSS** – Layout & Styling  
+- **JavaScript** – Spiellogik & Interaktionen  
 
 ---
+#### HTML – Struktur der Benutzeroberfläche
+
+Die Grundstruktur des Spiels – Spielfeld, Container und UI-Elemente – ist in der index.html definiert.
+
+ **📄 Datei ansehen:**  [➤ index.html öffnen](/src/assets/index.html)
+
+---
+
+#### CSS – Styling & Layout
+Das Layout, Farben, Animationen und Responsive Design werden in der CSS-Datei umgesetzt.
+Sie definiert unter anderem das Spielfeld, Hover-Effekte und Spieler-Markierungen.
+
+**🎨 CSS-Datei ansehen:**  [➤ tic-tac-toe.css öffnen](/src/assets/css/tic-tac-toe.css)
+
+---
+
+#### JavaScript – Spiellogik & Interaktionen
+
+Die komplette Spielmechanik (Spielzüge, Gewinnlogik, Neustart-Funktion etc.) wird über die JavaScript-Datei gesteuert.
+Sie verbindet die UI mit der Spiel-Engine.
+**⚙️ JavaScript-Datei ansehen:**  [➤ tic-tac-toe.js öffnen](/src/assets/js/tic-tac-toe.js)
+
+---
+### 🕹️ Tic-Tac-Toe Frontend lokal mit Podman ausführen
+
+Dieses Projekt stellt das **Tic-Tac-Toe-Frontend** über einen leichtgewichtigen **Nginx-Container** bereit.  
+Mit **Podman** kannst du die Anwendung **lokal, isoliert und portabel** ausführen, ohne dass zusätzliche Webserver oder Entwicklungswerkzeuge auf deinem System installiert sein müssen.
+
+Dieses Setup ist ideal für:
+
+- Schnelles Testen und Entwickeln der Anwendung  
+- Präsentationen oder Demos  
+- Konsistentes Verhalten auf verschiedenen Rechnern
+---
+####  📦 Containerfile (Nginx-basierter Webserver)
+
+Das Containerfile erstellt ein schlankes Image auf Basis von `nginx:alpine`.  
+Es entfernt die Standard-Nginx-HTML-Dateien und kopiert die eigenen statischen Dateien (HTML, CSS, JS) hinein:
+
+```dockerfile
+# Use a lightweight Nginx image
+FROM nginx:alpine
+
+# Remove the default Nginx HTML files
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy your static files into Nginx
+COPY src/assets/index.html /usr/share/nginx/html/
+COPY src/assets/css/tic-tac-toe.css /usr/share/nginx/html/
+COPY src/assets/js/tic-tac-toe.js /usr/share/nginx/html/ 
+
+# Expose port 80
+EXPOSE 80
+
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+##### 🔹 Erklärung der einzelnen Schritte
+
+FROM nginx:alpine – Nutzt ein leichtes, stabiles Nginx-Image als Basis.
+
+RUN rm -rf /usr/share/nginx/html/ – Entfernt die Standard-Nginx-Seite.
+
+COPY … – Kopiert HTML, CSS und JS ins Nginx-Webverzeichnis.
+
+EXPOSE 80 – Öffnet den Standard-HTTP-Port im Container.
+
+CMD ["nginx", "-g", "daemon off;"] – Startet Nginx im Vordergrund, damit der Container aktiv bleibt.
+
+---
+##### 🛠️ Image bauen
+Baue das lokale Image:
+```
+podman build -t gameops .
+```
+- Das Image heisst gameops
+- Enthält alle Frontend-Dateien und einen Nginx-Webserver
+---
+
+##### ▶️ Container starten
+
+Starte den Container und mappe den Container-Port 80 auf Host-Port 8080:
+
+```
+podman run -d -p 8080:80 --name gameops-ui gameops
+```
+- -d → Container läuft im Hintergrund
+
+- -p 8080:80 → Host-Port 8080 auf Container-Port 80
+- --name gameops-ui → Name des laufenden Containers
+
+---
+##### 🌐 Anwendung öffnen
+
+Öffne deinen Browser: 
+
+```
+http://localhost:8080
+```
+Du solltest nun das Tic-Tac-Toe-Frontend sehen und direkt spielen können.
+
+![alt text](./images/tic-tac-toe.png)
+
+---
+##### 📊 Containerstatus prüfen
+
+Um zu prüfen, ob der Container läuft:
+
+```
+podman ps
+```
+| Container  | Status  | Port | Image   |
+| ---------- | ------- | ---- | ------- |
+| gameops-ui | RUNNING | 8080 | gameops |
+
+###### In der Podman-App
+- Öffne die Podman Desktop-App.  
+- Unter **Container** siehst du alle laufenden Container, deren **Status**, **Name** und **zugeordnete Ports**.  
+- So kannst du schnell prüfen, ob der Tic-Tac-Toe-Container aktiv ist.
+  
+![alt text](./images/podman.png)
+
 ---
 ## ✅ Sprint Review
 ---
