@@ -238,7 +238,8 @@ EXPOSE 80 – Öffnet den Standard-HTTP-Port im Container.
 CMD ["nginx", "-g", "daemon off;"] – Startet Nginx im Vordergrund, damit der Container aktiv bleibt.
 
 ---
-##### 🛠️ Image bauen
+
+##### 🛠️ Image bauen
 
 Baue das lokale Image:
 
