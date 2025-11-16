@@ -239,7 +239,9 @@ CMD ["nginx", "-g", "daemon off;"] – Startet Nginx im Vordergrund, damit der C
 
 ---
 ##### 🛠️ Image bauen
+
 Baue das lokale Image:
+
 ```
 podman build -t gameops .
 ```
@@ -290,6 +292,8 @@ podman ps
   
 ![alt text](./images/podman.png)
 
+---
+---
 ---
 ## ✅ Sprint Review
 ---
