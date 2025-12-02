@@ -294,9 +294,241 @@ podman ps
 ![alt text](./images/podman.png)
 
 ---
+### Build & Deploy GameOps
+
+Dieser Abschnitt dokumentiert den **GitHub Actions Workflow**, der die GameOps Static Web-Anwendung automatisiert **baut, pusht und auf Minikube deployt**.  
+Der Workflow sorgt dafür, dass neue Änderungen im `main`-Branch automatisch getestet und bereitgestellt werden.
+
 ---
+#### 🛠️ Workflow Trigger
+
+Der Workflow wird bei einem **Push auf den `main`-Branch** ausgelöst.  
+Dateien, die keinen Deployment-Prozess betreffen, werden ignoriert:
+
+- `README.md`  
+- Alle Dateien im Verzeichnis `images/**`
+
+```yaml
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'README.md'
+      - 'images/**'
+```
 ---
-## ✅ Sprint Review
+#### 🏗️ Build & Push Docker Image
+
+**Zweck:** Container-Image erstellen und zu Docker Hub übertragen  
+**Runner:** `ubuntu-latest` 
+
+#####  Schritte
+
+1. **Checkout des Codes**  
+   Lädt den aktuellen Repository-Stand via `actions/checkout@v4`.
+2. **Podman installieren**  
+   Installiert Podman auf dem Runner, um Container zu bauen.
+3. **Image bauen**  
+   Das Image wird mit folgendem Tag erstellt:
+4. **Login zu Docker Hub**  
+Authentifizierung über GitHub Secrets (`DOCKERHUB_USERNAME` & `DOCKERHUB_TOKEN`).
+5. **Image pushen**  
+Überträgt das gebaute Image in Docker Hub.
+
+```yaml
+jobs:
+build-and-push:
+ runs-on: ubuntu-latest
+ steps:
+   - name: Checkout code
+     uses: actions/checkout@v4
+   - name: Install Podman
+     run: |
+       sudo apt-get update
+       sudo apt-get install -y podman
+   - name: Build Podman image
+     run: |
+       podman build -t docker.io/${{ secrets.DOCKERHUB_USERNAME }}/gameops:latest .
+   - name: Login to Docker Hub
+     run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | podman login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin docker.io
+   - name: Push Podman image
+     run: podman push docker.io/${{ secrets.DOCKERHUB_USERNAME }}/gameops:latest
+  ```
+
+---
+#### 🏗️ Deploy to Minikube
+
+**Zweck:** Container-Image vom Docker Hub ziehen und auf Minikube deployen  
+**Runner:** self-hosted (lokal)  
+**Abhängigkeit:** Läuft nur nach erfolgreichem Build & Push  
+
+##### Schritte
+
+1. **Checkout des Codes**  
+   Lädt den aktuellen Repository-Stand.
+
+2. **Pre-deployment Setup**  
+   Führt das Skript `scripts/predeploy-setup.sh` aus.
+```yaml
+#!/usr/bin/env bash
+set -e
+
+mv ~/.kube/config ~/.kube/config.backup || true
+minikube start --driver=podman
+(cd /Users/mosman02/actions-runner && ./run.sh) &
+``` 
+  
+   - Lokale Minikube-Umgebung für Tests bereitstellen.
+   - Self-Hosted Runner vor Deployment verfügbar machen.
+   - Bestehende kubeconfig schützen.
+   - ***Weitere Infos:***  
+👉 [Add Self-Hosted Runners – GitHub Docs](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/add-runners)
+
+
+3. **kubectl einrichten**  
+   Nutzt `azure/setup-kubectl@v3` für die aktuelle Version.
+
+4. **Lokale kubeconfig verwenden**  
+   Zugriff auf Minikube über `~/.kube/config`.
+
+5. **Image in Minikube ziehen**  
+```
+run: minikube image pull docker.io/${{ secrets.DOCKERHUB_USERNAME }}/gameops:latest
+```
+6. **Kubernetes Manifeste anwenden**  
+
+  ```yaml 
+     kubectl apply -f k8s/deployment.yaml --validate=false
+     kubectl apply -f k8s/service.yaml --validate=false
+  ```
+
+```yaml
+deploy-to-minikube:
+runs-on: self-hosted
+needs: build-and-push
+steps:
+ - name: Checkout code
+   uses: actions/checkout@v4
+ - name: Run pre-deployment setup
+   run: bash ./scripts/predeploy-setup.sh
+ - name: Set up kubectl
+   uses: azure/setup-kubectl@v3
+   with:
+     version: 'latest'
+ - name: Use local kubeconfig
+   run: echo "Using local kubeconfig at $HOME/.kube/config"
+ - name: Pull Docker image into Minikube
+   run: minikube image pull docker.io/${{ secrets.DOCKERHUB_USERNAME }}/gameops:latest
+ - name: Apply Kubernetes manifests
+   run: |
+     kubectl apply -f k8s/deployment.yaml --validate=false
+     kubectl apply -f k8s/service.yaml --validate=false
+```
+
+##### 🔹 Vorteile
+
+- Automatisierung: Jeder Push auf main löst Build & Deployment aus.
+
+- Sicherheit: Docker Hub Credentials werden über GitHub Secrets geschützt.
+
+- Flexibilität: Lokales Testen auf Minikube möglich.
+
+- Transparenz: CI/CD-Logs zeigen Status von Build, Push und Deployment.
+
+---
+### 📦 Kubernetes Deployment & Service Dokumentation
+
+Dieser Abschnitt beschreibt die Kubernetes-Manifeste, die verwendet werden, um die **GameOps Webanwendung** zu deployen und über einen **NodePort-Service** erreichbar zu machen.
+
+---
+#### 🏗️ Deployment (GameOps)
+
+Das Deployment stellt sicher, dass immer zwei Pods laufen und die Anwendung stabil bereitgestellt wird.
+
+[➤ deployment.yaml öffnen](k8s/deployment.yaml)
+
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gameops
+  labels:
+    app: gameops
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gameops
+  template:
+    metadata:
+      labels:
+        app: gameops
+    spec:
+      containers:
+        - name: gameops
+          image: docker.io/3ubarak/gameops:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+```
+##### 🔍 Erklärung
+
+- replicas: 2 → Zwei Pods laufen gleichzeitig.
+- imagePullPolicy: Always → Immer die neueste Image-Version laden.
+- containerPort: 80 → Die Anwendung läuft im Container auf Port 80.
+- Labels verbinden Deployment, Pods und Services miteinander.
+---
+#### 🌐 Service (NodePort)
+
+[➤ service.yaml öffnen](k8s/service.yaml)
+
+
+Der Service macht die App extern erreichbar – ideal für lokale Tests über Minikube.
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: gameops-service
+spec:
+  selector:
+    app: gameops
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30007
+```
+##### 🔍 Erklärung
+
+- type: NodePort → Öffnet einen Port am Minikube-Host.
+- port / targetPort → Service-Port 80 → Container-Port 80.
+- nodePort: 30007 → Browserzugriff über Minikube-IP.
+---
+#### 🌍 Anwendung öffnen
+
+*Minikube-IP abrufen:*
+```
+minikube ip
+```
+
+*Browser öffnen:*
+```
+http://<minikube-ip>:30007
+```
+
+*Dienst im Standardbrowser öffnen:*
+
+```
+minikube service gameops-service
+```
+---
+
+---
+
+---
+
 ---
 ### Sprint 0
 ---
@@ -568,4 +800,300 @@ CMD ["nginx", "-g", "daemon off;"]
 - Standardisierte Vorlage für Containerfile und Projektstruktur einführen.  
 - Portkonflikte frühzeitig prüfen und dokumentieren.  
 - Testcontainer auf mehreren Systemen validieren, bevor der Sprint endet.
+---
+### Sprint 2
+---
+
+#### Zeitraum
+
+<table>
+  <thead>
+    <tr>
+      <th style="background-color:#f2f2f2;">Period</th>
+      <th style="background-color:#f2f2f2;">Task</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="color:#2E86C1;">17.011.2025 – 07.12.2025</td>
+      <td style="color:#117A65;">CI/CD Pipeline & Kubernetes Deployment</td>
+    </tr>
+
+  </tbody>
+</table>
+
+---
+#### Sprintziel
+
+Die CI/CD-Pipeline für automatisiertes Bauen, Testen und Pushen von Docker-Containern einrichten und die Kubernetes-Deployment-Struktur definieren, sodass die Anwendung zuverlässig auf Minikube ausgeführt und über NodePort oder Ingress getestet werden kann.
+
+---
+#### CI/CD Pipeline & Kubernetes Deployment
+
+![CI/CD Pipline](images/ci-cd.png)
+
+---
+![Kubernets](images/kubernets.png)
+
+---
+
+##### 🟣 User Story 8: **Automatisierten Docker-Image-Build einrichten** <a name="user-story-8"></a> 
+
+**Als** Entwickler  
+**möchte ich** einen automatischen Build-Prozess für das GameOps-Web-Frontend  
+**damit** bei jedem Commit auf den `main`-Branch ein aktuelles und konsistentes Docker-Image erzeugt wird.
+
+**Akzeptanzkriterien:**
+
+- Workflow startet bei jedem Push auf `main`.  
+- Die Dateien `README.md` und `images/**` werden ignoriert.  
+- Podman wird auf dem GitHub-Runner installiert.  
+- Das Docker-Image wird erfolgreich über `podman build` erzeugt.  
+- Fehlerhafte Builds stoppen die Pipeline.
+---
+
+##### 🟣 User Story 9: **Qualität durch Tests sicherstellen** <a name="user-story-9"></a> 
+
+**Als** DevOps Engineer  
+**möchte ich** Tests in die CI-Pipeline integrieren  
+**damit** fehlerhafte Artefakte frühzeitig erkannt und nicht in die Registry oder ins Deployment gelangen.
+
+**Akzeptanzkriterien:**
+
+- Tests werden vor dem Push-Schritt ausgeführt.  
+- Die Pipeline bricht bei fehlerhaften Tests ab.  
+- Testergebnisse sind im CI-Log sichtbar.  
+- Erfolgreiche Tests sind Voraussetzung für die weiteren Schritte.
+---
+
+##### 🟣 User Story 10: **Container-Images automatisch in Docker Hub veröffentlichen** <a name="user-story-10"></a> 
+
+**Als** DevOps Engineer  
+**möchte ich** das gebaute Docker-Image automatisch in Docker Hub pushen  
+**damit** Minikube und andere Systeme immer auf das neueste Image zugreifen können.
+
+**Akzeptanzkriterien:**
+
+- Docker Hub Login erfolgt sicher über GitHub Secrets.  
+- Image wird mit Tag `latest` nach Docker Hub übertragen.  
+- Push schlägt bei Authentifizierungsfehlern nicht stillschweigend fehl.  
+- Push findet nur statt, wenn Build (und Tests) erfolgreich waren.
+
+---
+
+##### 🟣 User Story 11: **Container-Images automatisch in Docker Hub veröffentlichen** <a name="user-story-11"></a> 
+
+**Als** DevOps Engineer  
+**möchte ich** nach einem erfolgreichen Build das Deployment automatisch auf Minikube aktualisieren  
+**damit** die Anwendung kontinuierlich bereitgestellt und ohne manuelle Schritte aktualisiert wird.
+
+**Akzeptanzkriterien:**
+
+- Deployment startet nur, wenn der Build & Push erfolgreich war.  
+- Self-hosted Runner nutzt das lokale `~/.kube/config`.  
+- Minikube lädt das neueste Image (`minikube image pull`).  
+- Kubernetes Deployment- und Service-Dateien werden erfolgreich angewendet.  
+- Die Anwendung ist im Minikube-Cluster erreichbar.
+---
+
+##### 🟣 User Story 12: **Kubernetes-Manifeste erstellen** <a name="user-story-12"></a> 
+
+**Als** DevOps Engineer  
+**möchte ich** Kubernetes-Manifeste für Deployment, Service und ConfigMap schreiben  
+**damit** die containerisierte Anwendung korrekt im Cluster laufen kann.
+
+**Akzeptanzkriterien:**
+- Deployment definiert die Container, Replikas und Labels.  
+- Service verbindet Pods und stellt Ports bereit.  
+- ConfigMap enthält Konfigurationswerte, die von Containern genutzt werden können.  
+- YAML-Dateien sind syntaktisch korrekt und fehlerfrei.
+
+---
+##### 🟣 User Story 13: **Container auf Minikube deployen** <a name="user-story-13"></a> 
+
+**Als** DevOps Engineer  
+**möchte ich** die erstellten Kubernetes-Manifeste auf einem lokalen Minikube-Cluster anwenden  
+**damit** die Anwendung lokal getestet und weiterentwickelt werden kann.
+
+**Akzeptanzkriterien:**
+
+- Alle Ressourcen (Pods, Deployments, Services) werden erfolgreich erstellt.  
+- Container starten ohne Fehler.  
+- Replikas laufen wie in der Deployment-Definition vorgesehen.  
+- Minikube Cluster ist erreichbar und einsatzbereit.
+---
+
+##### 🟣 User Story 14: **Container auf Minikube deployen** <a name="user-story-14"></a> 
+
+**Als** DevOps Engineer  
+**möchte ich** die Anwendung über NodePort oder Ingress im Browser zugänglich machen  
+**damit** ich die Funktionalität der Anwendung testen kann.
+
+**Akzeptanzkriterien:**
+
+- NodePort oder Ingress ist korrekt konfiguriert.  
+- Die Anwendung ist über `localhost:<nodePort>` oder über eine Ingress-URL erreichbar.  
+- HTTP-Anfragen werden erfolgreich beantwortet.  
+- Änderungen am Deployment sind sichtbar, wenn die App aktualisiert wird.
+
+---
+##### Sprint Backlog
+
+
+| Nr. | Bereich                  | User Story                                                        | Status   |
+|-----|--------------------------|------------------------------------------------------------------|----------|
+| 8   | CI/CD Build              | [Automatisierter Docker-Image-Build](#user-story-8)              | ✅ Done  |
+| 9  | Qualitätssicherung       | [Tests im CI-Workflow integrieren](#user-story-9)                | ✅ Done  |
+| 10   | Artifact Delivery        | [Image nach Docker Hub pushen](#user-story-10)                     | ✅ Done  |
+| 11   | Deployment Automation    | [Deployment auf Minikube automatisieren](#user-story-11)           | ✅ Done  |
+| 12   | Kubernetes Setup         | [Kubernetes-Manifeste erstellen](#user-story-12)                  | ✅ Done  |
+| 13   | Deployment auf Minikube  | [Container auf Minikube deployen](#user-story-13)                 | ✅ Done  |
+| 14   | Testing & Exposure       | [Anwendung über NodePort oder Ingress testen](#user-story-14)     | ✅ Done  |
+
+---
+#### 🏁 Sprint Review
+---
+
+##### ✅ Was wurde erreicht?
+- GitHub Actions Workflow für automatisierten Docker-Image-Build wurde erstellt.  
+- Tests wurden in die CI-Pipeline integriert (grundsätzliche Struktur).  
+- Container-Image wurde erfolgreich zu Docker Hub gepusht.  
+- Deployment auf Minikube nach erfolgreichem Build automatisiert.  
+- Kubernetes-Manifeste (Deployment, Service) für `gameops` erstellt.  
+- Container auf Minikube erfolgreich deployed und gestartet.  
+- Cluster mit Lens visualisiert, Pods, Deployments und Services laufen korrekt.  
+- Anwendung über NodePort im Browser getestet und erreichbar.
+
+---
+
+##### ⚠️ Herausforderungen
+- CI/CD-Pipeline musste für Podman konfiguriert werden, Unterschiede zu Docker berücksichtigen.  
+- Minikube-Pull des Images von Docker Hub erforderte korrekte Authentifizierung und Tagging.  
+- Lokale Testumgebung (Minikube) war auf manchen Systemen initial fehleranfällig.  
+- Lens zeigte teilweise Pods erst verspätet nach Deployment an.
+
+---
+
+##### 🎓 Lessons Learned
+- Automatisierte Pipelines erhöhen Stabilität und sparen Zeit bei wiederholten Builds.  
+- Lokale Minikube-Tests helfen, Deployment-Probleme früh zu erkennen.  
+- Lens ist hilfreich für schnelle visuelle Kontrolle von Cluster-Ressourcen.  
+- NodePort-Services ermöglichen einfache Browser-Tests ohne komplexe Ingress-Konfiguration.
+
+---
+#### 🔍 Sprint Retrospektive
+---
+
+##### ✅ Was lief gut?
+- CI/CD-Workflow konnte termingerecht implementiert werden.  
+- Deployment auf Minikube funktionierte nach Anpassungen zuverlässig.  
+- Kubernetes-Ressourcen liefen stabil im Cluster.  
+- Team konnte Änderungen schnell testen und validieren.
+
+---
+##### ⚠️ Was lief nicht gut?
+- Erstkonfiguration von Podman und Minikube war zeitaufwendig.  
+- Authentifizierung bei Docker Hub-Push verursachte initial Fehler.  
+- Dokumentation der genauen Schritte für Self-Hosted Runner musste mehrfach angepasst werden.
+
+---
+##### 🚀 Verbesserungsmöglichkeiten
+- Standardisierte CI/CD-Vorlage für Podman/Docker einführen.  
+- Checkliste für Minikube-Setup und NodePort-Konfiguration erstellen.  
+- Automatisierte Tests für Deployment- und Service-Status im Cluster implementieren. 
+---
+### Sprint 3
+---
+
+#### Zeitraum
+
+<table>
+  <thead>
+    <tr>
+      <th style="background-color:#f2f2f2;">Period</th>
+      <th style="background-color:#f2f2f2;">Task</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="color:#2E86C1;">05.12.2025 – 14.12.2025</td>
+      <td style="color:#117A65;">GameOps Observability & Documentation</td>
+    </tr>
+
+  </tbody>
+</table>
+
+---
+#### Sprintziel
+
+Ziel dieses Sprints ist es, die GameOps-Anwendung besser beobachtbar und stabil zu machen, indem wir ein Monitoring-Tool auswählen und implementieren, Ressourcenlimits und Liveness/Readiness-Probes konfigurieren, sowie die Deployment-Architektur dokumentieren und eine Präsentation/Demo vorbereiten.  
+
+Dieser Sprint stellt sicher, dass:
+
+- Pods überwacht werden können und Leistungskennzahlen sichtbar sind.  
+- Ressourcen effizient zugewiesen sind und die Anwendung fehlertolerant läuft.  
+- Alle Setup-Schritte, Architektur und CI/CD-Prozesse klar dokumentiert sind.  
+- Eine Präsentation mit Live-Demo und Visualisierungen des Monitoring-Tools bereitsteht.
+
+---
+#### GameOps Observability & Documentation
+
+---
+##### 🟣 User Story 15: **Monitoring-Tools vergleichen und auswählen** <a name="user-story-15"></a>  
+
+**Als** DevOps Engineer  
+**möchte ich** Lens und Grafana + Prometheus vergleichen  
+**damit** ich das geeignetste Tool für Echtzeit-Monitoring von Pods, Logs und Performance-Metriken auswählen kann.  
+
+**Akzeptanzkriterien:**  
+
+- Vergleichskriterien werden definiert (Echtzeit-Logs, Dashboards, Metriken).  
+- Entscheidung für ein Tool dokumentiert.  
+- Entscheidung basiert auf Stabilität, Übersichtlichkeit und Einsatz im lokalen Minikube-Cluster.  
+---
+##### 🟣 User Story 16: **Monitoring-Tool implementieren und überwachen** <a name="user-story-16"></a>  
+
+**Als** DevOps Engineer  
+**möchte ich** das ausgewählte Monitoring-Tool einrichten  
+**damit** Pods, Logs und Ressourcen in Echtzeit überwacht werden können.  
+
+**Akzeptanzkriterien:**  
+
+- Tool ist installiert und konfiguriert (Lens oder Grafana + Prometheus).  
+- Dashboards oder Visualisierungen zeigen Status, Logs und Metriken der Pods.  
+- Alerts oder Hinweise bei Fehlfunktionen werden getestet.  
+
+---
+##### 🟣 User Story 17: **Setup und Architektur dokumentieren** <a name="user-story-17"></a>  
+
+**Als** Entwickler / DevOps Engineer  
+**möchte ich** die Deployment-Schritte, Architektur und CI/CD-Workflow dokumentieren  
+**damit** andere Teammitglieder die Umgebung verstehen und reproduzieren können.  
+
+**Akzeptanzkriterien:**  
+
+- Alle Schritte zur Installation und Konfiguration sind dokumentiert.  
+- Architekturdiagramme oder Schema der Cluster-Ressourcen sind vorhanden.  
+- CI/CD-Pipeline mit Build, Push und Deployment ist beschrieben.
+---
+##### 🟣 User Story 18: **Präsentation und Demo vorbereiten** <a name="user-story-18"></a>  
+
+**Als** Entwickler / DevOps Engineer  
+**möchte ich** eine Präsentation und Demo erstellen  
+**damit** der Fortschritt des Projekts, die Monitoring-Visualisierungen und die Cluster-Performance vorgestellt werden können.  
+
+**Akzeptanzkriterien:**  
+
+- Präsentation enthält Screenshots oder Dashboards des Monitoring-Tools.  
+- Live-Demo des Deployments auf Minikube möglich.  
+- Kernpunkte von Monitoring, Optimierung und Architektur sind verständlich dargestellt. 
+---
+
+| Nr. | Bereich                     | User Story                                                                 | Status   |
+|-----|-----------------------------|---------------------------------------------------------------------------|----------|
+| 15  | Monitoring Tool Evaluation   | [Monitoring-Tools vergleichen und auswählen](#user-story-15)              | ✅ Done |
+| 16  | Monitoring Implementation    | [Monitoring-Tool implementieren und überwachen](#user-story-16)           | ✅ Done |
+| 17  | Documentation               | [Setup und Architektur dokumentieren](#user-story-17)                     | ✅ Done |
+| 18  | Presentation & Demo         | [Präsentation und Demo vorbereiten](#user-story-18)                       | ✅ Done |
+
 ---
