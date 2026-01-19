@@ -1,3 +1,4 @@
+
 # GameOps
 ---
 ## 📉 Projektbeschreibung
@@ -124,6 +125,42 @@ Ich werde **Kanban** verwenden, um alle Aufgaben zu visualisieren und den Status
 Kanban hilft dabei, die Arbeit transparent und effizient zu organisieren und den Fortschritt kontinuierlich zu überwachen.
 
 ---
+## 🏃‍♂️ Sprint-Dokumentation (Agiles Vorgehen)
+---
+
+Die Entwicklung von **GameOps** erfolgte iterativ nach einem **agilen Vorgehensmodell**.  
+Das Projekt ist in mehrere **Sprints** unterteilt, die jeweils klar definierte Ziele, User Stories, Akzeptanzkriterien sowie eine Review- und Retrospektive enthalten.
+
+Jeder Sprint dokumentiert:
+- das **Sprintziel** und den fachlichen Fokus  
+- die umgesetzten **User Stories** inkl. Akzeptanzkriterien  
+- den **Sprint Backlog** mit Status  
+- ein **Sprint Review**  
+- eine **Retrospektive** mit Lessons Learned
+
+Diese Struktur macht den Projektfortschritt sowie das DevOps-Vorgehen transparent und nachvollziehbar.
+
+---
+### 📌 Übersicht der Sprints
+---
+- **Sprint 0 – Project Setup**  
+  Initiales Setup, Repository-Struktur und Tooling.  
+  👉 [Sprint 0 ansehen](./sprints/sprint-0-project-setup.md)
+
+- **Sprint 1 – Frontend Development & Containerization**  
+  Entwicklung des Tic-Tac-Toe-Frontends und Containerisierung.  
+  👉 [Sprint 1 ansehen](./sprints/sprint-1-frontend-containerization.md)
+
+- **Sprint 2 – CI/CD & Kubernetes Deployment**  
+  Automatisierte Pipeline und Deployment auf Minikube.  
+  👉 [Sprint 2 ansehen](./sprints/sprint-2-cicd-kubernetes.md)
+
+- **Sprint 3 – Observability & Documentation**  
+  Monitoring, Dokumentation und Demo.  
+  👉 [Sprint 3 ansehen](./sprints/sprint-3-observability-documentation.md)
+
+---
+
 ## 🧱 Architekturübersicht
 
 ![alt text](./images/infra.drawio.png)
@@ -529,274 +566,3 @@ minikube service gameops-service
 
 ---
 
----
-### Sprint 0
----
-#### Zeitraum
-
-<table>
-  <thead>
-    <tr>
-      <th style="background-color:#f2f2f2;">Period</th>
-      <th style="background-color:#f2f2f2;">Task</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="color:#2E86C1;">01.11.2025 – 10.11.2025</td>
-      <td style="color:#117A65;">Project Setup</td>
-    </tr>
-  </tbody>
-</table>
-
----
-#### Sprintziel
-
-**Project Setup:**
-Das Projekt initialisieren, die technische Basisstruktur festlegen und die notwendigen Repositories, Tools und Workflows zur Zusammenarbeit im Team aufsetzen.
-
----
-#### 🛠️ User Stories – Project Setup
----
-
-![InfrastructureSetup](images/project-setup.png)
-
----
-##### 🟣 User Story 1: GitHub-Repository einrichten <a name="user-story-1"></a>
-**Als** Entwickler  
-**möchte ich** ein GitHub-Repository erstellen,  
-**damit** wir den Code versionieren und gemeinsam bearbeiten können.
-
-**Akzeptanzkriterien:**
-- Ein Repository mit dem Namen GameOps ist unter der richtigen Organisation oder dem richtigen Account vorhanden.
-- Eine README.md, .gitignore und eine passende Lizenzdatei sind erstellt.
-- Zugriffsrechte und Branch-Protection-Regeln sind korrekt konfiguriert.
----
-
-##### 🟣 User Story 2: Verzeichnisstruktur organisieren <a name="user-story-2"></a>
-**Als** Entwickler  
-**möchte ich** Die Repository-Struktur wird klar und einheitlich aufgebaut, um die Wartbarkeit und Übersichtlichkeit zu gewährleisten.  
-**damit** eine gemeinsame technische Grundlage besteht.
-
-**Benötigte Verzeichnisse:**
-- app/ – Applikationsquellcode
-- deployment/ – Deployment-Skripte und -Konfigurationen
-- .github/workflows/ – CI/CD-Workflows und Automatisierungen
-- docs/ – Projektdokumentation
-
-**Akzeptanzkriterien:**
-- Die oben genannten Ordner sind im Repository vorhanden.
-
----
-
- ##### 🟣 User Story 3: Lokale Entwicklungs-Tools installieren und konfigurieren <a name="user-story-3"></a>
-
-**Als** Entwickler  
-**möchte ich** Entwicklung notwendigen Tools installieren
-**damit** wir unsere Infrastruktur aufbauen können.
-
-**Tools**
-
-- **Docker** – Zum Containerisieren und lokalen Ausführen der Applikation
-
-- **Minikube** – Zum Simulieren einer Kubernetes-Umgebung
-
-- **Lens** – Zur Verwaltung und Visualisierung von Kubernetes-Ressourcen
-
-**Akzeptanzkriterien:**
-- Docker, Minikube und Lens sind lokal installiert und funktionsfähig.
-- Die Grundfunktionen jedes Tools (z. B. Start eines Testcontainers oder lokalen Clusters) wurden erfolgreich überprüft.
----
-#### Sprint Backlog
-
-
-| Nr. | Bereich            | User Story                                           | Status   |
-|-----|--------------------|------------------------------------------------------|----------|
-| 1   | Project Setup      | [GitHub-Repository einrichten einrichten](#user-story-1)       | ✅ Done  |
-| 2   | Project Setup      | [Verzeichnisstruktur organisieren definieren](#user-story-2)          | ✅ Done  |
-| 3   | Project Setup      | [Lokale Entwicklungs-Tools installieren und konfigurieren](#user-story-3)                               | ✅ Done  |
-
----
-#### 🏁 Sprint Review
----
-##### ✅ Was wurde erreicht?
-- Neues **GitHub-Repository `GameOps`** wurde erfolgreich erstellt und konfiguriert.  
-- Klare **Projektstruktur** mit den Verzeichnissen `app/`, `deployment/`, `.github/workflows/` und `docs/` wurde angelegt.  
-- **README.md**, `.gitignore` und Lizenzdatei wurden hinzugefügt.  
-- **Docker**, **Minikube** und **Lens** wurden lokal installiert und erfolgreich getestet.  
-- Grundlegende **CI/CD-Struktur** vorbereitet (Workflows-Ordner vorhanden).  
----
-##### ⚠️ Herausforderungen
-- Lokale Installation von **Minikube** benötigte zusätzliche Anpassungen an der Umgebung.  
-- Erste **Repository-Zugriffsrechte** mussten nachträglich korrigiert werden.  
-- Zeitplanung für das lokale Setup wurde leicht unterschätzt.  
----
-##### 🎓 Lessons Learned
-- Frühzeitige Planung der lokalen Entwicklungsumgebung spart viel Abstimmungsaufwand.  
-- Zugriffs- und Berechtigungsstrukturen sollten vor dem Start klar definiert sein.  
-- Gemeinsame Dokumentation im `docs/`-Ordner erleichtert zukünftige Einarbeitungen.  
----
-
-#### 🔍 Sprint Retrospective
----
-##### ✅ Was lief gut?
-- Das **Repository** wurde sauber erstellt und ist klar strukturiert.  
-- Die Teammitglieder konnten **Docker**, **Minikube** und **Lens** erfolgreich einrichten.  
-- Zusammenarbeit im Team war effizient und gut koordiniert.  
-- Dokumentation wurde parallel gepflegt.  
----
-##### ⚠️ Was lief nicht gut?
-- Die Installation von **Minikube** war auf einigen Geräten fehleranfällig.  
-- Zugriffsrechte auf das GitHub-Repository mussten manuell nachjustiert werden.  
-- Die Zeit für lokale Tests wurde etwas unterschätzt.  
----
-##### 🚀 Verbesserungsmöglichkeiten
-- Künftige lokale Setups sollten durch eine **standardisierte Installationsanleitung** unterstützt werden.  
-- **Repository-Berechtigungen** direkt zu Sprintbeginn festlegen.  
-- Einen **kurzen Testlauf der Tool-Installation** im Voraus einplanen, um mögliche Fehlerquellen früh zu erkennen.  
-  
----
-### Sprint 1
----
-#### Zeitraum
-
-<table>
-  <thead>
-    <tr>
-      <th style="background-color:#f2f2f2;">Period</th>
-      <th style="background-color:#f2f2f2;">Sprint</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="color:#2E86C1;">10.11.2025 – 17.11.2025</td>
-      <td style="color:#117A65;">Game Frontend Development and Containerization</td>
-    </tr>
-  </tbody>
-</table>
-
----
-#### Sprintziel
-**Game Frontend Containerization:** Entwicklung und Containerisierung des Tic-Tac-Toe Frontends. Fokus liegt auf dem Aufbau einer klar strukturierten Projektverzeichnisstruktur, der Erstellung des Frontend-UI-Codes (HTML, CSS, JS), der Containerisierung mit Docker (Containerfile) sowie dem Testen des Containers lokal, um eine stabile Basis für zukünftiges Deployment auf Kubernetes zu schaffen.
-
----
-#### 🖥️📦 User Stories - Game Frontend Development & Containerization
----
-![InfrastructureSetup](images/Game-Frontend%20Development-Containerization.png)
-
----
-
-##### 🟣 **User Story 4: Game Frontend UI entwickeln** <a name="user-story-4"></a>  
-**Als** Entwickler  
-**möchte ich** die Benutzeroberfläche des Spiels entwickeln  
-**damit** die Spieler eine funktionale und ansprechende UI zum Spielen haben.
-
-**Akzeptanzkriterien:**  
-- HTML, CSS und JS für das Tic-Tac-Toe-Frontend sind geschrieben.  
-- Die UI kann lokal im Browser getestet werden und reagiert korrekt auf Spielerinteraktionen.  
-- Grundlegende Layout- und Designrichtlinien sind umgesetzt.
-
----
-
-##### 🟣 **User Story 5: Entwicklungsumgebung und Projektstruktur aufsetzen** <a name="user-story-5"></a>  
-**Als** Entwickler  
-**möchte ich** die Projektstruktur klar organisieren  
-**damit** die Wartbarkeit und Erweiterbarkeit des Frontends gewährleistet ist.
-
-**Benötigte Verzeichnisse:**  
-- `.github/workflows/` – CI/CD-Workflows  
-- `src/assets/` – HTML, CSS, JS  
-- `images/` – Dokumentation bilder  
-- `k8s/` – Kubernetes-Deployment- und Service-Dateien  
-- `scripts/` – Hilfsskripte für Setup oder Deployment  
-- `Containerfile` – Dockerfile für das Frontend  
-- `README.md` – Projektdokumentation
-
-**Akzeptanzkriterien:**  
-- Ordnerstruktur ist erstellt und sauber dokumentiert.  
-- Teammitglieder können die Dateien problemlos finden und erweitern.
-
----
-
-##### 🟣 **User Story 6: Frontend mit Docker containerisieren** <a name="user-story-6"></a>  
-**Als** Entwickler  
-**möchte ich** das Frontend in einem Docker-Container laufen lassen  
-**damit** wir es konsistent lokal und später in Kubernetes ausführen können.
-
-**Dockerfile** (bereits geschrieben):
-
-```
-# Use a lightweight Nginx image
-FROM nginx:alpine
-
-# Remove the default Nginx HTML files
-RUN rm -rf /usr/share/nginx/html/*
-
-# Copy your static files into Nginx
-COPY src/assets/index.html /usr/share/nginx/html/
-COPY src/assets/css/tic-tac-toe.css /usr/share/nginx/html/
-COPY src/assets/js/tic-tac-toe.js /usr/share/nginx/html/
-
-# Expose port 80
-EXPOSE 80
-
-# Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
-```
----
-##### 🟣 User Story 7: Test Frontend Container Locally <a name="user-story-7"></a>
-**Als** Entwickler  
-**möchte ich** den Frontend-Container lokal starten und testen,  
-**damit** sichergestellt ist, dass die Applikation korrekt läuft und alle Dateien richtig eingebunden sind.
-
-**Akzeptanzkriterien:**
-- Der Container kann lokal gestartet werden (z. B. `podman start`).  
-- Die HTML-, CSS- und JS-Dateien werden korrekt geladen und die UI funktioniert erwartungsgemäss.  
-- Der Container lauscht auf dem vorgesehenen Port (z. B. 80) und ist über den Browser erreichbar.  
-- Eventuelle Fehler im Container oder Pfadprobleme werden erkannt und behoben.  
----
-#### Sprint Backlog
-
-| Nr. | Bereich            | User Story                                           | Status   |
-|-----|--------------------|------------------------------------------------------|----------|
-| 4   |  Frontend Dev | [Game Frontend UI entwickeln](#user-story-4)                  | ✅ Done  |
-| 5   | Project Setup | [Entwicklungsumgebung & Projektstruktur aufsetzen](#user-story-5)      | ✅ Done  |
-| 6   | Containerization | [Frontend mit Docker containerisieren](#user-story-6)    | ✅ Done  |
-| 7   | Containerization | [Frontend Container lokal testen](#user-story-7)    | ✅ Done  |
----
-#### 🏁 Sprint Review
----
-
-##### ✅ Was wurde erreicht?
-- Frontend UI für Tic-Tac-Toe wurde erfolgreich entwickelt.  
-- Projektstruktur mit `.github/workflows/`, `src/assets/`, `images/`, `k8s/` und `scripts/` ist aufgebaut.  
-- Dockerfile (Containerfile) für das Frontend erstellt und Container lokal getestet.  
-- Frontend-Container läuft fehlerfrei auf Port 80.  
----
-##### ⚠️ Herausforderungen
-- Erste Abstimmung zur Projektstruktur benötigte etwas Zeit.  
-- Pfade im Containerfile mussten mehrfach angepasst werden, um alle Dateien korrekt zu kopieren.  
-- Lokaler Containerstart war auf einigen Systemen zunächst fehleranfällig (z. B. Port-Konflikte).  
----
-##### 🎓 Lessons Learned
-- Saubere Projektstruktur erleichtert die spätere Weiterentwicklung und Containerisierung.  
-- Containerfile frühzeitig testen, um Build- und Laufzeitprobleme zu vermeiden.  
-- Dokumentation von Pfaden und Container-Ports spart Zeit bei Teamtests.  
----
-#### 🔍 Sprint Retrospektive
----
-
-##### ✅ Was lief gut?
-- Frontend-Code wurde termingerecht fertiggestellt.  
-- Containerfile funktionierte nach einigen Anpassungen problemlos.  
-- Team konnte schnell lokal mit dem Container arbeiten.  
-- Dokumentation der Projektstruktur wurde parallel gepflegt.  
----
-##### ⚠️ Was lief nicht gut?
-- Lokaler Containerstart war teilweise fehleranfällig.  
-- Abstimmung bei Verzeichnisstruktur und Containerfile erforderte Nachbesserungen.  
----
-##### 🚀 Verbesserungsmöglichkeiten
-- Standardisierte Vorlage für Containerfile und Projektstruktur einführen.  
-- Portkonflikte frühzeitig prüfen und dokumentieren.  
-- Testcontainer auf mehreren Systemen validieren, bevor der Sprint endet.
