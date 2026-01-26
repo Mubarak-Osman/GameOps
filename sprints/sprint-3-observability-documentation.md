@@ -36,6 +36,8 @@ Dieser Sprint stellt sicher, dass:
 ---
 #### GameOps Observability & Documentation
 
+![Monitoring](../images/monitoring.png)
+
 ---
 ##### 🟣 User Story 15: **Monitoring-Tools vergleichen und auswählen** <a name="user-story-15"></a>  
 
