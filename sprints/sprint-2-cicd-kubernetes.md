@@ -1,3 +1,4 @@
+
 ---
 ### Sprint 2
 ---
@@ -28,10 +29,10 @@ Die CI/CD-Pipeline für automatisiertes Bauen, Testen und Pushen von Docker-Cont
 ---
 #### CI/CD Pipeline & Kubernetes Deployment
 
-![CI/CD Pipline](images/ci-cd.png)
+![CI/CD Pipline](../images/ci-cd.png)
 
 ---
-![Kubernets](images/kubernets.png)
+![Kubernets](../images/kubernets.png)
 
 ---
 

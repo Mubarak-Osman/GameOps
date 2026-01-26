@@ -561,8 +561,89 @@ http://<minikube-ip>:30007
 minikube service gameops-service
 ```
 ---
+### 📊 Observability & Monitoring mit Lens
+---
+#### Ziel
+Ziel dieses Abschnitts ist es, die Überwachung und Analyse der Kubernetes-Umgebung während des Betriebs der GameOps-Anwendung transparent darzustellen. Dabei wird **Lens** als zentrales Monitoring- und Verwaltungswerkzeug eingesetzt.
 
 ---
+#### 🔍 Vergleich: Lens vs. klassische Monitoring-Tools (z. B. Grafana)
+
+
+| Kriterium | Lens | Grafana |
+|---------|------|---------|
+| Fokus | Operativer Kubernetes-Betrieb | Langzeit-Monitoring & Visualisierung |
+| Echtzeit-Ansicht | Ja | Eingeschränkt |
+| Historische Metriken | Begrenzt | Sehr gut |
+| Logs & Pod-Zugriff | Direkt integriert | Über Zusatztools |
+| Setup-Aufwand | Sehr gering | Mittel bis hoch |
+| Zielgruppe | DevOps / Ops Engineers | Ops, SRE, Management |
+
+**Fazit:**  
+Für dieses Projekt wurde **Lens bewusst gewählt**, da der Fokus auf lokalem Betrieb, Debugging, Ressourcennutzung und Transparenz liegt. Ein separates Monitoring-Stack (z. B. Prometheus/Grafana) wurde als optional betrachtet.
 
 ---
+#### 🧭 Einsatz von Lens im Projekt
 
+Lens wird zur Überwachung des Minikube-Clusters verwendet und bietet folgende Funktionen:
+
+- Übersicht über **Nodes, Pods, Deployments und Services**
+- Anzeige von **CPU- und Memory-Auslastung**
+- Einsicht in **Pod-Logs**
+- Überprüfung von **Replica-Status und Rollouts**
+- Schnelles Troubleshooting bei Fehlern oder CrashLoops
+---
+
+#### 🖥️ Cluster-Überwachung
+
+**Deployment-Überwachung**
+- Sicherstellung, dass immer **2 Pods** aktiv sind (`replicas: 2`)
+- Kontrolle von Pod-Neustarts und Rollouts
+
+**Ressourcennutzung**
+- Analyse von CPU- und RAM-Auslastung der GameOps-Pods
+- Bewertung der Skalierbarkeit unter Last
+
+**Logs**
+- Live-Analyse der Nginx-Logs pro Pod
+- Nachvollziehbarkeit von Requests und Fehlern
+---
+
+#### 🧱 Monitoring-Architektur
+
+**Komponenten:**
+- Kubernetes (Minikube)
+- GameOps Pods (Nginx + Frontend)
+- Lens Desktop
+- Kubernetes API Server
+
+**Datenfluss:**
+1. Kubernetes stellt Status- und Metrikdaten bereit
+2. Lens greift über kubeconfig auf die Kubernetes-API zu
+3. Daten werden in Echtzeit visualisiert
+4. Analyse durch Entwickler und Operatoren
+---
+
+#### 🧪 Monitoring im Betrieb
+
+Während der Tests wurden folgende Punkte beobachtet:
+
+- Stabile Skalierung des Deployments bei mehreren Zugriffen
+- Automatische Pod-Neustarts bei Fehlern
+- Durchgehende Erreichbarkeit des Services
+- Pod-spezifische Log-Auswertung in Lens
+
+Dies bestätigt die korrekte Umsetzung der Skalierbarkeit und Stabilität der Anwendung.
+
+---
+#### 📌 Fazit Observability
+
+Lens eignet sich besonders für:
+- Lokale Kubernetes-Umgebungen
+- Entwicklungs- und Testphasen
+- Live-Demos und Präsentationen
+- Schnelles Troubleshooting ohne komplexes Setup
+
+Für produktive Umgebungen kann Lens sinnvoll durch **Prometheus & Grafana** ergänzt werden.
+
+---
