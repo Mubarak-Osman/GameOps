@@ -97,3 +97,54 @@ Dieser Sprint stellt sicher, dass:
 | 18  | Presentation & Demo         | [Präsentation und Demo vorbereiten](#user-story-18)                       | ✅ Done |
 
 ---
+
+#### 🏁 Sprint Review
+
+---
+
+##### ✅ Was wurde erreicht?
+- Lens als Monitoring-Tool für Minikube erfolgreich ausgewählt und implementiert.  
+- Echtzeit-Überwachung von Pods, Logs, CPU- und Memory-Metriken eingerichtet.  
+- Ressourcenlimits, Liveness- und Readiness-Probes für GameOps-Pods konfiguriert.  
+- Deployment-Architektur und CI/CD-Workflow vollständig dokumentiert.  
+- Präsentation mit Screenshots der Dashboards und Live-Demo auf Minikube vorbereitet.  
+- Teammitglieder konnten die Umgebung dank Dokumentation problemlos reproduzieren.  
+
+---
+##### ⚠️ Herausforderungen
+- Auswahl des Monitoring-Tools erforderte Abwägung zwischen Echtzeitfähigkeit (Lens) und Langzeit-Analysen (Grafana/Prometheus).  
+- Liveness- und Readiness-Probes mussten mehrfach angepasst werden, um False-Positives zu vermeiden.  
+- Bei Live-Demo traten initial kleine Verzögerungen bei Pod-Status und Log-Anzeige auf.  
+- Dokumentation der genauen Installations- und Konfigurationsschritte war zeitaufwendig, um reproduzierbar zu sein.
+
+---
+##### 🎓 Lessons Learned
+- Lens eignet sich hervorragend für lokale Test- und Entwicklungscluster, schnelle Fehleranalyse und Debugging.  
+- Ressourcenlimits und Probes verbessern die Stabilität der Anwendung und verhindern CrashLoops.  
+- Dokumentation und Visualisierung sind entscheidend, um die Transparenz für Team und Stakeholder zu erhöhen.  
+- Vorbereitung einer Live-Demo erfordert frühzeitiges Testen der Cluster-Performance und Dashboards.
+
+---
+#### 🔍 Sprint Retrospektive
+
+---
+
+##### ✅ Was lief gut?
+- Monitoring-Tool konnte schnell evaluiert, ausgewählt und implementiert werden.  
+- Echtzeit-Metriken und Logs ermöglichten schnelle Identifikation von Problemen.  
+- Dokumentation und Präsentation ermöglichten eine klare Kommunikation des Projektfortschritts.  
+- Team konnte selbstständig Tests und Dashboards nachvollziehen.
+---
+
+##### ⚠️ Was lief nicht gut?
+- Feinjustierung von Probes und Ressourcenlimits dauerte länger als geplant.  
+- Live-Demo auf Minikube zeigte gelegentlich verzögerte Updates in Lens.  
+- Dokumentation musste mehrfach angepasst werden, um verständlich und reproduzierbar zu sein.
+
+---
+
+##### 🚀 Verbesserungsmöglichkeiten
+- Standardisierte Vorlage für Monitoring-Setup inkl. Probes, Ressourcenlimits und Dashboards einführen.  
+- Automatisierte Checks für Deployment- und Pod-Status im Cluster implementieren.  
+- Regelmäßige Tests für Live-Demo und Dashboard-Darstellung einplanen.  
+- Feedback-Runden mit Teammitgliedern frühzeitig in die Dokumentation einbeziehen.
